@@ -24,6 +24,8 @@ namespace FrontEnd.Pages
 
         public bool IsAdmin { get; set; }
 
+        public List<int> UserSessions { get; set; } = new List<int>();
+
         public IndexModel(ILogger<IndexModel> logger, IApiClient apiClient)
         {
             _logger = logger;
@@ -41,7 +43,50 @@ namespace FrontEnd.Pages
 
             CurrentDayOffset = day;
 
-            var sessions = await _apiClient.GetSessionsAsync();
+            if (User.Identity.IsAuthenticated)
+            {
+                var userSessions = await _apiClient.GetSessionsByAttendeeAsync(User.Identity.Name);
+                UserSessions = userSessions.Select(u => u.Id).ToList();
+            }
+
+            var sessions = await GetSessionsAsync();
+
+            var startDate = sessions.Min(s => s.StartTime?.Date);
+
+            var offset = 0;
+
+            
+            DayOffsets = sessions.Select(s => s.StartTime?.Date)
+                                 .Distinct()
+                                 .OrderBy(d => d)
+                                 .Select(day => (offset++, day?.DayOfWeek));
+            
+            
+            // DayOffsets = [(0, System.DayOfWeek.Wednesday), (1, System.DayOfWeek.Thursday), (2, System.DayOfWeek.Friday)];
+
+            var filterDate = startDate?.AddDays(day);
+
+            Sessions = sessions.Where(s => s.StartTime?.Date == filterDate)
+                               .OrderBy(s => s.TrackId)
+                               .GroupBy(s => s.StartTime)
+                               .OrderBy(g => g.Key);
+        }
+
+        /*
+        // Original - before me trying to fix bug
+        public async Task OnGet(int day = 0)
+        {
+            IsAdmin = User.IsAdmin();
+
+            CurrentDayOffset = day;
+
+            if (User.Identity.IsAuthenticated)
+            {
+                var userSessions = await _apiClient.GetSessionsByAttendeeAsync(User.Identity.Name);
+                UserSessions = userSessions.Select(u => u.Id).ToList();
+            }
+
+            var sessions = await GetSessionsAsync();
 
             var startDate = sessions.Min(s => s.StartTime?.Date);
 
@@ -57,6 +102,26 @@ namespace FrontEnd.Pages
                                .OrderBy(s => s.TrackId)
                                .GroupBy(s => s.StartTime)
                                .OrderBy(g => g.Key);
+        }
+        */
+
+        protected virtual Task<List<SessionResponse>> GetSessionsAsync()
+        {
+            return _apiClient.GetSessionsAsync();
+        }
+
+        public async Task<IActionResult> OnPostAsync(int sessionId)
+        {
+            await _apiClient.AddSessionToAttendeeAsync(User.Identity.Name, sessionId);
+
+            return RedirectToPage();
+        }
+
+        public async Task<IActionResult> OnPostRemoveAsync(int sessionId)
+        {
+            await _apiClient.RemoveSessionFromAttendeeAsync(User.Identity.Name, sessionId);
+
+            return RedirectToPage();
         }
     }
 }
