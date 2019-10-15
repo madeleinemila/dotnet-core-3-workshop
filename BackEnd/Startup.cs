@@ -50,6 +50,9 @@ namespace BackEnd
                 options.DescribeAllEnumsAsStrings();
 #pragma warning restore CS0618 // Type or member is obsolete
             });
+
+            services.AddHealthChecks()
+                .AddDbContextCheck<ApplicationDbContext>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -75,6 +78,7 @@ namespace BackEnd
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
+                endpoints.MapHealthChecks("/health");
             });
 
             app.Run(context =>

@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using FrontEnd.Data;
+using FrontEnd.HealthChecks;
 using FrontEnd.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -44,6 +46,10 @@ namespace FrontEnd
                           .RequireIsAdminClaim();
                 });
             });
+
+            services.AddHealthChecks()
+                .AddCheck<BackendHealthCheck>("backend")
+                .AddDbContextCheck<IdentityDbContext>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -72,6 +78,7 @@ namespace FrontEnd
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapRazorPages();
+                endpoints.MapHealthChecks("/health");
             });
         }
     }
