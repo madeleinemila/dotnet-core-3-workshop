@@ -17,14 +17,14 @@ namespace FrontEnd.Areas.Identity
         {
             builder.ConfigureServices((context, services) => {
                 services.AddDbContext<IdentityDbContext>(options => {
-                    if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                    {
-                        options.UseSqlServer(context.Configuration.GetConnectionString("DefaultConnection"));
-                    }
-                    else
-                    {
-                        options.UseSqlite("Data Source=identity.db");
-                    }
+                    // if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                    // {
+                        options.UseNpgsql(context.Configuration.GetConnectionString("IdentityDbContextConnection"));
+                    // }
+                    // else
+                    // {
+                    //   options.UseSqlite("Data Source=identity.db");
+                    // }
                 });
 
                 services.AddDefaultIdentity<User>()

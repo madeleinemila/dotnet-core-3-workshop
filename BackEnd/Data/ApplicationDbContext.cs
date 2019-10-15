@@ -7,8 +7,10 @@ namespace BackEnd.Data
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)
         {
-
         }
+
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+            => optionsBuilder.UseNpgsql("Host=db;Database=ConferencePlanner;Username=postgres;Password=foobar12!");
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

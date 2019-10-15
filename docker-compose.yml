@@ -18,7 +18,7 @@ services:
       - backend
 
   db:
-    image: "microsoft/mssql-server-linux"
+    image: "postgres"
     environment:
-      SA_PASSWORD: "ConferencePlanner1234$$"
-      ACCEPT_EULA: "Y"
+      POSTGRES_USER: "postgres"
+      POSTGRES_PASSWORD: "foobar12!"

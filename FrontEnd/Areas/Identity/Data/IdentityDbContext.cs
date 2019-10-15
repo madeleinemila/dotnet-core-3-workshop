@@ -16,6 +16,10 @@ namespace FrontEnd.Data
         {
         }
 
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+            => optionsBuilder.UseNpgsql("Host=db;Database=ConferencePlannerFront;Username=postgres;Password=foobar12!");
+
+
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
