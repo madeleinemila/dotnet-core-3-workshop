@@ -31,14 +31,14 @@ namespace BackEnd
         {
             services.AddDbContext<ApplicationDbContext>(options =>
             {
-                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                {
+                // if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                // {
                     options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"));
-                }
-                else
-                {
+                // }
+                // else
+                // {
                     options.UseSqlite("Data Source=conferences.db");
-                }
+                // }
             });
 
             services.AddControllers();
@@ -61,9 +61,10 @@ namespace BackEnd
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
+                app.UseDatabaseErrorPage();
             }
 
-            app.UseHttpsRedirection();
+            // app.UseHttpsRedirection();
 
             app.UseRouting();
 
