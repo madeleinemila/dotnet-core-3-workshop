@@ -16,6 +16,12 @@ namespace FrontEnd.Pages
         private readonly ILogger<IndexModel> _logger;
         protected readonly IApiClient _apiClient;
 
+        public IndexModel(ILogger<IndexModel> logger, IApiClient apiClient)
+        {
+            _logger = logger;
+            _apiClient = apiClient;
+        }
+
         public IEnumerable<IGrouping<DateTimeOffset?, SessionResponse>> Sessions { get; set; }
 
         public IEnumerable<(int Offset, DayOfWeek? DayofWeek)> DayOffsets { get; set; }
@@ -25,12 +31,6 @@ namespace FrontEnd.Pages
         public bool IsAdmin { get; set; }
 
         public List<int> UserSessions { get; set; } = new List<int>();
-
-        public IndexModel(ILogger<IndexModel> logger, IApiClient apiClient)
-        {
-            _logger = logger;
-            _apiClient = apiClient;
-        }
 
         [TempData]
         public string Message { get; set; }
@@ -49,79 +49,42 @@ namespace FrontEnd.Pages
                 UserSessions = userSessions.Select(u => u.Id).ToList();
             }
 
-            var sessions = await GetSessionsAsync();
+            var displaySessions = await GetSessionsAsync();
+            var allSessions = await _apiClient.GetSessionsAsync();
 
-            var startDate = sessions.Min(s => s.StartTime?.Date);
-
+            var startDate = allSessions.Min(s => s.StartTime?.Date);
+            
             var offset = 0;
-
-            
-            DayOffsets = sessions.Select(s => s.StartTime?.Date)
-                                 .Distinct()
-                                 .OrderBy(d => d)
-                                 .Select(day => (offset++, day?.DayOfWeek));
-            
-            
-            // DayOffsets = [(0, System.DayOfWeek.Wednesday), (1, System.DayOfWeek.Thursday), (2, System.DayOfWeek.Friday)];
-
-            var filterDate = startDate?.AddDays(day);
-
-            Sessions = sessions.Where(s => s.StartTime?.Date == filterDate)
-                               .OrderBy(s => s.TrackId)
-                               .GroupBy(s => s.StartTime)
-                               .OrderBy(g => g.Key);
-        }
-
-        /*
-        // Original - before me trying to fix bug
-        public async Task OnGet(int day = 0)
-        {
-            IsAdmin = User.IsAdmin();
-
-            CurrentDayOffset = day;
-
-            if (User.Identity.IsAuthenticated)
-            {
-                var userSessions = await _apiClient.GetSessionsByAttendeeAsync(User.Identity.Name);
-                UserSessions = userSessions.Select(u => u.Id).ToList();
-            }
-
-            var sessions = await GetSessionsAsync();
-
-            var startDate = sessions.Min(s => s.StartTime?.Date);
-
-            var offset = 0;
-            DayOffsets = sessions.Select(s => s.StartTime?.Date)
+            DayOffsets = allSessions.Select(s => s.StartTime?.Date)
                                  .Distinct()
                                  .OrderBy(d => d)
                                  .Select(day => (offset++, day?.DayOfWeek));
 
             var filterDate = startDate?.AddDays(day);
 
-            Sessions = sessions.Where(s => s.StartTime?.Date == filterDate)
+            Sessions = displaySessions.Where(s => s.StartTime?.Date == filterDate)
                                .OrderBy(s => s.TrackId)
                                .GroupBy(s => s.StartTime)
                                .OrderBy(g => g.Key);
         }
-        */
 
         protected virtual Task<List<SessionResponse>> GetSessionsAsync()
         {
             return _apiClient.GetSessionsAsync();
         }
 
-        public async Task<IActionResult> OnPostAsync(int sessionId)
+        public async Task<IActionResult> OnPostAsync(int sessionId, int day)
         {
             await _apiClient.AddSessionToAttendeeAsync(User.Identity.Name, sessionId);
 
-            return RedirectToPage();
+            return RedirectToPage("/Index", new { day });
         }
 
-        public async Task<IActionResult> OnPostRemoveAsync(int sessionId)
+        public async Task<IActionResult> OnPostRemoveAsync(int sessionId, int day)
         {
             await _apiClient.RemoveSessionFromAttendeeAsync(User.Identity.Name, sessionId);
 
-            return RedirectToPage();
+            return RedirectToPage("/Index", new { day });
         }
     }
 }

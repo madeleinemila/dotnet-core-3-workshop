@@ -1,0 +1,14 @@
+﻿@page
+@model SpeakersModel
+@{
+    ViewData["Title"] = "Speakers";
+}
+
+<h3>Speakers</h3>
+
+<ul class="list-group">
+    @foreach (var speaker in Model.Speakers)
+    {
+        <li class="list-group-item"><a asp-page="Speaker" asp-route-id="@speaker.Id">@speaker.Name</a></li>
+    }
+</ul>

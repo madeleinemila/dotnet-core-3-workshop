@@ -1,6 +1,9 @@
 ﻿@page
 @using ConferenceDTO
 @model WelcomeModel
+@{
+    ViewData["Title"] = "Welcome";
+}
 
 <h2>Welcome @User.Identity.Name</h2>
 <p>

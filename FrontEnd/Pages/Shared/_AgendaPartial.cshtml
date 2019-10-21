@@ -10,6 +10,12 @@
 </ul>
 
 <div class="agenda">
+
+    @if (Model.Sessions.Count() == 0)
+    {
+        <p>No sessions to show for this day</p>
+    }
+
     @foreach (var timeSlot in Model.Sessions)
     {
         <h4>@timeSlot.Key?.ToString("HH:mm")</h4>
@@ -33,8 +39,9 @@
                             </ul>
                             <form authz method="post">
                             <input type="hidden" name="sessionId" value="@session.Id" />
+                            <input type="hidden" name="day" value="@Model.CurrentDayOffset" />
                             <p class="mb-0">
-                                <a authz-policy="Admin" asp-page="/Admin/EditSession" asp-route-id="@session.Id" class="btn btn-default btn-xs">Edit</a>
+                                <a authz-policy="Admin" asp-page="/Admin/EditSession" asp-route-id="@session.Id" class="btn btn-light btn-xs border border-warning">Edit</a>
                                 @if (Model.UserSessions.Contains(session.Id))
                                 {
                                     <button type="submit" asp-page-handler="Remove" class="btn btn-default btn-sm bg-transparent" title="Remove from my personal agenda">
